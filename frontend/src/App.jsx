@@ -3,7 +3,11 @@ import { io } from "socket.io-client";
 import { defaultStocks } from "./nseList";
 import { nseSymbols } from "./nseSymbols"; // your 500 list for autocomplete
 
-const socket = io("https://realtimebitstock-tracker.onrender.com/");
+const socket = io("wss://realtimebitstock-tracker.onrender.com", {
+  transports: ["websocket"],
+});
+
+//const socket = io("https://realtimebitstock-tracker.onrender.com/");
 //const socket = io("http://localhost:5000");
 
 function formatINR(value) {
