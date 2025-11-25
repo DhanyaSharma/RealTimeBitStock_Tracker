@@ -28,7 +28,7 @@ const STOCK_LIST = [
 ];
 
 io.on("connection", (socket) => {
-  console.log("Client connected:", socket.id);
+  console.log("✅ Client connected:", socket.id);
 
   const interval = setInterval(async () => {
     try {
@@ -50,22 +50,22 @@ io.on("connection", (socket) => {
       });
 
     } catch (err) {
-      console.error("Live update error:", err.message);
+      console.error("❌ Live update error:", err.message);
       socket.emit("dashboardError", { message: "Update failed" });
     }
-  }, 4000);
+  }, 5000);
 
   socket.on("disconnect", () => {
     clearInterval(interval);
-    console.log("Client disconnected:", socket.id);
+    console.log("❌ Client disconnected:", socket.id);
   });
 });
 
 app.get("/", (req, res) => {
-  res.send("Backend is running");
+  res.send("✅ Real-time backend is running");
 });
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log("Server running on port", PORT);
+  console.log("🚀 Server running on port", PORT);
 });
