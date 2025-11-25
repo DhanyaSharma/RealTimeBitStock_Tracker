@@ -4,6 +4,7 @@ import { defaultStocks } from "./nseList";
 import { nseSymbols } from "./nseSymbols"; // your 500 list for autocomplete
 
 const socket = io("https://realtimebitstock-tracker.onrender.com/");
+//const socket = io("http://localhost:5000");
 
 function formatINR(value) {
   if (value === null || value === undefined || Number.isNaN(value)) return "--";
