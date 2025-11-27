@@ -9,7 +9,4 @@ This project streams live price updates every second without page reloads, using
 
 👉 https://your-vercel-url.vercel.app
 
-🔹 Backend (Render):
-
-👉 https://your-render-backend.onrender.com
 
