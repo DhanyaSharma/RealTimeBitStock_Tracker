@@ -1,102 +1,43 @@
 const axios = require("axios");
 
+/* ---------------- USD → INR ---------------- */
+async function getUsdInr() {
+  try {
+    const url = "https://api.exchangerate.host/latest?base=USD&symbols=INR";
+    const res = await axios.get(url);
+    return res.data.rates.INR;
+  } catch {
+    return 83;
+  }
+}
 
-let cachedBTC = null;
-let lastBTCFetch = 0;
-
+/* ---------------- BTC ---------------- */
 async function getBTCinINR() {
   try {
-    const url =
-      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=inr";
-
-    const res = await axios.get(url);
-
-    const price = res.data?.bitcoin?.inr;
-
-    if (!price) throw new Error("BTC price missing");
-
-    return Number(price);
+    // CoinGecko — NO API KEY, NO RATE LIMIT
+    const cg = await axios.get(
+      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=inr"
+    );
+    return cg.data.bitcoin.inr;
   } catch (err) {
-    console.error("BTC error:", err.message);
+    console.error("CoinGecko BTC error:", err.message);
     return null;
   }
 }
 
-module.exports = { getBTCinINR };
-
-
-
-let cachedNifty = null;
-let lastNiftyFetch = 0;
-
+/* ---------------- NIFTY ---------------- */
 async function getNiftyPrice() {
-  const now = Date.now();
-
-  if (cachedNifty && now - lastNiftyFetch < 3000) {
-    return cachedNifty;
-  }
-
   try {
     const url =
       "https://query1.finance.yahoo.com/v8/finance/chart/%5ENSEI?interval=1m";
+
     const res = await axios.get(url);
-
-    const result = res.data?.chart?.result?.[0];
-    const price = result?.meta?.regularMarketPrice;
-
-    if (price) {
-      cachedNifty = Number(price);
-      lastNiftyFetch = now;
-      return cachedNifty;
-    }
-
-    throw new Error("NIFTY price missing");
+    const result = res.data.chart.result[0];
+    return result.meta.regularMarketPrice;
   } catch (err) {
     console.error("NIFTY error:", err.message);
-    return cachedNifty || null;
+    return null;
   }
 }
 
-
-let cachedStocks = {};
-let lastStockFetch = 0;
-
-async function getNSEStocks(symbols) {
-  const now = Date.now();
-
-  if (Object.keys(cachedStocks).length > 0 && now - lastStockFetch < 3000) {
-    return symbols.map((sym) => cachedStocks[sym] || { symbol: sym, price: null });
-  }
-
-  try {
-    const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols.join(
-      ","
-    )}`;
-    const res = await axios.get(url);
-
-    const results = res.data.quoteResponse.result;
-
-    const formatted = results.map((s) => ({
-      symbol: s.symbol.replace(".NS", ""),
-      price: s.regularMarketPrice ?? null,
-    }));
-
-    formatted.forEach(
-      (obj) => (cachedStocks[obj.symbol + ".NS"] = obj)
-    );
-    lastStockFetch = now;
-
-    return formatted;
-  } catch (err) {
-    console.error("Stocks error:", err.message);
-
-    return symbols.map((sym) => cachedStocks[sym] || { symbol: sym, price: null });
-  }
-}
-
-
-module.exports = {
-  getBTCinINR,
-  getNiftyPrice,
-  getNSEStocks,
-};
+module.exports = { getBTCinINR, getNiftyPrice };
