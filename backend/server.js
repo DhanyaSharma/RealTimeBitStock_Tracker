@@ -6,6 +6,8 @@ const { Server } = require("socket.io");
 
 const { getBTCinINR, getNiftyPrice } = require("./services/priceService");
 const { getNSEStocks } = require("./services/stockService");
+const { getNifty } = require("./services/indexService");
+
 
 const app = express();
 app.use(cors());
