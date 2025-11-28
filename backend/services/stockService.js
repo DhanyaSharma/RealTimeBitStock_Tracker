@@ -1,28 +1,36 @@
 const axios = require("axios");
 
+/**
+ * Fetch NSE stock prices using Yahoo CHART API
+ * Much more stable than the quote API.
+ */
 async function getNSEStocks(symbols) {
   try {
-    const results = await Promise.all(
-      symbols.map(async (sym) => {
-        try {
-          const res = await axios.get(
-            `https://api.twelvedata.com/price?symbol=${sym}`
-          );
+    const result = [];
 
-          return {
-            symbol: sym.replace(".NS", ""),
-            price: res.data.price ? Number(res.data.price) : null,
-          };
-        } catch {
-          return { symbol: sym.replace(".NS", ""), price: null };
-        }
-      })
-    );
+    for (const sym of symbols) {
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1m`;
 
-    return results;
+      const res = await axios.get(url);
+
+      const meta = res.data?.chart?.result?.[0]?.meta;
+      const price = meta?.regularMarketPrice;
+
+      result.push({
+        symbol: sym.replace(".NS", ""),
+        price: price ?? null,
+      });
+    }
+
+    console.log("📌 Stocks fetched:", result);
+    return result;
+
   } catch (err) {
     console.error("Stocks error:", err.message);
-    return [];
+    return symbols.map(sym => ({
+      symbol: sym.replace(".NS", ""),
+      price: null,
+    }));
   }
 }
 
