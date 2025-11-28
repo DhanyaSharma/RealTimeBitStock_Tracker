@@ -50,7 +50,7 @@ io.on("connection", (socket) => {
       const bitcoin = await getBTCinINR();
 
       // 2) NIFTY 50
-      const nifty = await getNiftyPrice();
+      const nifty = await getNifty();
 
       // 3) NSE stocks
       const symbols = STOCK_LIST.map((s) => s + ".NS");
