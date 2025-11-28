@@ -2,13 +2,24 @@ const axios = require("axios");
 
 async function getNSEStocks(symbols) {
   try {
-    const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols.join(",")}`;
+    const results = await Promise.all(
+      symbols.map(async (sym) => {
+        try {
+          const res = await axios.get(
+            `https://api.twelvedata.com/price?symbol=${sym}`
+          );
 
-    const res = await axios.get(url);
-    return res.data.quoteResponse.result.map((s) => ({
-      symbol: s.symbol.replace(".NS", ""),
-      price: s.regularMarketPrice ?? null,
-    }));
+          return {
+            symbol: sym.replace(".NS", ""),
+            price: res.data.price ? Number(res.data.price) : null,
+          };
+        } catch {
+          return { symbol: sym.replace(".NS", ""), price: null };
+        }
+      })
+    );
+
+    return results;
   } catch (err) {
     console.error("Stocks error:", err.message);
     return [];

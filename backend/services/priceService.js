@@ -1,39 +1,39 @@
 const axios = require("axios");
 
-/* ---------------- USD → INR ---------------- */
+// USD → INR
 async function getUsdInr() {
   try {
     const url = "https://api.exchangerate.host/latest?base=USD&symbols=INR";
     const res = await axios.get(url);
-    return res.data.rates.INR;
+    return res.data?.rates?.INR || 83;
   } catch {
     return 83;
   }
 }
 
-/* ---------------- BTC ---------------- */
+// BTC in INR (Binance + USDINR)
 async function getBTCinINR() {
   try {
-    // CoinGecko — NO API KEY, NO RATE LIMIT
-    const cg = await axios.get(
-      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=inr"
+    const btcRes = await axios.get(
+      "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"
     );
-    return cg.data.bitcoin.inr;
+
+    const btcUsd = parseFloat(btcRes.data.price);
+    const usdInr = await getUsdInr();
+
+    return Number(btcUsd * usdInr);
   } catch (err) {
-    console.error("CoinGecko BTC error:", err.message);
+    console.error("BTC error:", err.message);
     return null;
   }
 }
 
-/* ---------------- NIFTY ---------------- */
 async function getNiftyPrice() {
   try {
-    const url =
-      "https://query1.finance.yahoo.com/v8/finance/chart/%5ENSEI?interval=1m";
-
-    const res = await axios.get(url);
-    const result = res.data.chart.result[0];
-    return result.meta.regularMarketPrice;
+    const res = await axios.get(
+      "https://api.twelvedata.com/price?symbol=NSEI"
+    );
+    return Number(res.data.price);
   } catch (err) {
     console.error("NIFTY error:", err.message);
     return null;
