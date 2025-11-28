@@ -24,7 +24,7 @@ async function getBTCinINR() {
     return cachedBTC;
   } catch (err) {
     console.error("BTC fetch error:", err.message);
-    return cachedBTC || null; // fallback to last known value
+    return cachedBTC || null; 
   }
 }
 
