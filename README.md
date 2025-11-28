@@ -7,9 +7,6 @@ This project streams live price updates every second without page reloads, using
 🚀 Live Demo
 🔹 Frontend (Vercel):
 
-👉 https://your-vercel-url.vercel.app
+👉 [https://your-vercel-url.vercel.app](https://real-time-bit-stock-tracker.vercel.app/)
 
-🔹 Backend (Render):
-
-👉 https://your-render-backend.onrender.com
 
