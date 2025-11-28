@@ -5,28 +5,24 @@ let cachedBTC = null;
 let lastBTCFetch = 0;
 
 async function getBTCinINR() {
-  const now = Date.now();
-
-  
-  if (cachedBTC && now - lastBTCFetch < 3000) {
-    return cachedBTC;
-  }
-
   try {
-    const res = await axios.get("https://api.wazirx.com/api/v2/tickers/btcinr");
-    const price = res.data?.ticker?.last;
+    const url =
+      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=inr";
+
+    const res = await axios.get(url);
+
+    const price = res.data?.bitcoin?.inr;
 
     if (!price) throw new Error("BTC price missing");
 
-    cachedBTC = Number(price);
-    lastBTCFetch = now;
-
-    return cachedBTC;
+    return Number(price);
   } catch (err) {
-    console.error("BTC fetch error:", err.message);
-    return cachedBTC || null; 
+    console.error("BTC error:", err.message);
+    return null;
   }
 }
+
+module.exports = { getBTCinINR };
 
 
 
