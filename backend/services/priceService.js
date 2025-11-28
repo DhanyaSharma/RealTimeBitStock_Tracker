@@ -1,83 +1,103 @@
 const axios = require("axios");
 
-/**
- * ✅ Get USD → INR using Yahoo Finance
- */
-async function getUsdInr() {
+
+let cachedBTC = null;
+let lastBTCFetch = 0;
+
+async function getBTCinINR() {
+  const now = Date.now();
+
+  
+  if (cachedBTC && now - lastBTCFetch < 3000) {
+    return cachedBTC;
+  }
+
+  try {
+    const res = await axios.get("https://api.wazirx.com/api/v2/tickers/btcinr");
+    const price = res.data?.ticker?.last;
+
+    if (!price) throw new Error("BTC price missing");
+
+    cachedBTC = Number(price);
+    lastBTCFetch = now;
+
+    return cachedBTC;
+  } catch (err) {
+    console.error("BTC fetch error:", err.message);
+    return cachedBTC || null; // fallback to last known value
+  }
+}
+
+
+
+let cachedNifty = null;
+let lastNiftyFetch = 0;
+
+async function getNiftyPrice() {
+  const now = Date.now();
+
+  if (cachedNifty && now - lastNiftyFetch < 3000) {
+    return cachedNifty;
+  }
+
   try {
     const url =
-      "https://query1.finance.yahoo.com/v8/finance/chart/USDINR=X?interval=1m";
-
+      "https://query1.finance.yahoo.com/v8/finance/chart/%5ENSEI?interval=1m";
     const res = await axios.get(url);
-    const result = res.data?.chart?.result?.[0];
-    const price = result?.meta?.regularMarketPrice;
-
-    return price ? Number(price) : null;
-  } catch (err) {
-    console.error("FX error:", err.message);
-    return 83; // safe fallback
-  }
-}
-
-/**
- * ✅ BTC price in INR → Binance BTCUSDT * USDINR
- */
-async function getBTCinINR() {
-  try {
-    const btcRes = await axios.get(
-      "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"
-    );
-    const btcUsd = parseFloat(btcRes.data.price);
-
-    const usdInr = await getUsdInr();
-    if (!usdInr) throw new Error("Failed USD/INR");
-
-    return Number(btcUsd * usdInr);
-  } catch (err) {
-    console.error("BTC error:", err.message);
-    return null;
-  }
-}
-
-/**
- * ✅ Get NIFTY price from NSE India
- */
-async function getNiftyPrice() {
-  try {
-    const res = await axios.get(
-      "https://query1.finance.yahoo.com/v8/finance/chart/%5ENSEI?interval=1m"
-    );
 
     const result = res.data?.chart?.result?.[0];
     const price = result?.meta?.regularMarketPrice;
 
-    return price ? Number(price) : null;
+    if (price) {
+      cachedNifty = Number(price);
+      lastNiftyFetch = now;
+      return cachedNifty;
+    }
+
+    throw new Error("NIFTY price missing");
   } catch (err) {
     console.error("NIFTY error:", err.message);
-    return null;
+    return cachedNifty || null;
   }
 }
 
-/**
- * ✅ Get multiple NSE stock prices (Yahoo Finance)
- * symbols = ["INFY.NS", "TCS.NS", "HDFCBANK.NS"]
- */
+
+let cachedStocks = {};
+let lastStockFetch = 0;
+
 async function getNSEStocks(symbols) {
+  const now = Date.now();
+
+  if (Object.keys(cachedStocks).length > 0 && now - lastStockFetch < 3000) {
+    return symbols.map((sym) => cachedStocks[sym] || { symbol: sym, price: null });
+  }
+
   try {
     const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols.join(
       ","
     )}`;
-
     const res = await axios.get(url);
-    return res.data.quoteResponse.result.map((s) => ({
+
+    const results = res.data.quoteResponse.result;
+
+    const formatted = results.map((s) => ({
       symbol: s.symbol.replace(".NS", ""),
       price: s.regularMarketPrice ?? null,
     }));
+
+    formatted.forEach(
+      (obj) => (cachedStocks[obj.symbol + ".NS"] = obj)
+    );
+    lastStockFetch = now;
+
+    return formatted;
   } catch (err) {
     console.error("Stocks error:", err.message);
-    return [];
+
+    return symbols.map((sym) => cachedStocks[sym] || { symbol: sym, price: null });
   }
 }
+
 
 module.exports = {
   getBTCinINR,

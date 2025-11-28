@@ -1,11 +1,8 @@
 const axios = require("axios");
 
-/**
- * Get NIFTY price using Yahoo Finance (very stable).
- */
 async function getNifty() {
   try {
-    // ^NSEI = NIFTY 50 ticker
+   
     const url =
       "https://query1.finance.yahoo.com/v8/finance/chart/%5ENSEI?interval=1m";
 

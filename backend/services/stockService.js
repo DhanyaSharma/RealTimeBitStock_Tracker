@@ -1,21 +1,20 @@
 const axios = require("axios");
 
-async function getIndianStocks(symbols) {
+async function getIndianStock(symbol) {
   try {
-    const yahooSymbols = symbols.map(s => `${s}.NS`).join(",");
-
-    const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${yahooSymbols}`;
+    const yahooSymbol = `${symbol}.NS`; // NSE symbol pattern
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}?interval=1m`;
 
     const res = await axios.get(url);
 
-    return res.data.quoteResponse.result.map(s => ({
-      symbol: s.symbol.replace(".NS", ""),
-      price: s.regularMarketPrice ?? null,
-    }));
+    const result = res.data?.chart?.result?.[0];
+    const price = result?.meta?.regularMarketPrice;
+
+    return price ? Number(price) : null;
   } catch (err) {
-    console.error("Stocks error:", err.message);
-    return symbols.map(s => ({ symbol: s, price: null }));
+    console.error("Stock price error:", err.message);
+    return null;
   }
 }
 
-module.exports = { getIndianStocks };
+module.exports = { getIndianStock };
