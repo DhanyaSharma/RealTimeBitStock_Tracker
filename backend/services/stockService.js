@@ -1,34 +1,38 @@
+
 const axios = require("axios");
 
-/**
- * Fetch NSE stock prices using Yahoo CHART API
- * Much more stable than the quote API.
- */
 async function getNSEStocks(symbols) {
   try {
-    const result = [];
+    
+    const requests = symbols.map((sym) =>
+      axios.get(
+        `https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1m`
+      )
+    );
 
-    for (const sym of symbols) {
-      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1m`;
+    const responses = await Promise.allSettled(requests);
 
-      const res = await axios.get(url);
+    const results = responses.map((res, idx) => {
+      const symbol = symbols[idx].replace(".NS", "");
 
-      const meta = res.data?.chart?.result?.[0]?.meta;
-      const price = meta?.regularMarketPrice;
+      if (res.status === "rejected") {
+        console.error(`Yahoo Error for ${symbol}:`, res.reason.message);
+        return { symbol, price: null };
+      }
 
-      result.push({
-        symbol: sym.replace(".NS", ""),
-        price: price ?? null,
-      });
-    }
+      const meta = res.value.data?.chart?.result?.[0]?.meta;
+      const price = meta?.regularMarketPrice ?? null;
 
-    console.log("📌 Stocks fetched:", result);
-    return result;
+      return { symbol, price };
+    });
 
+    console.log("📌 Stocks fetched:", results);
+    return results;
   } catch (err) {
-    console.error("Stocks error:", err.message);
-    return symbols.map(sym => ({
-      symbol: sym.replace(".NS", ""),
+    console.error("Stock fetch fatal error:", err.message);
+
+    return symbols.map((s) => ({
+      symbol: s.replace(".NS", ""),
       price: null,
     }));
   }

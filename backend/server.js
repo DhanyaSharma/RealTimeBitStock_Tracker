@@ -1,4 +1,4 @@
-// backend/server.js
+
 const express = require("express");
 const http = require("http");
 const cors = require("cors");
@@ -22,7 +22,6 @@ const io = new Server(server, {
   }
 });
 
-// 15 NSE stock symbols
 const STOCK_LIST = [
   "RELIANCE",
   "TCS",
@@ -46,17 +45,14 @@ io.on("connection", (socket) => {
 
   const interval = setInterval(async () => {
     try {
-      // 1) BTC → INR
+  
       const bitcoin = await getBTCinINR();
 
-      // 2) NIFTY 50
       const nifty = await getNifty();
 
-      // 3) NSE stocks
       const symbols = STOCK_LIST.map((s) => s + ".NS");
       const stocks = await getNSEStocks(symbols);
 
-      // Send update to frontend
       socket.emit("dashboardUpdate", {
         bitcoin,
         nifty,
@@ -67,7 +63,7 @@ io.on("connection", (socket) => {
       console.error("❌ Live update error:", err.message);
       socket.emit("dashboardError", { message: "Update failed" });
     }
-  }, 5000); // every 5 sec
+  }, 5000); 
 
   socket.on("disconnect", () => {
     clearInterval(interval);
@@ -75,7 +71,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// simple root route
 app.get("/", (req, res) => {
   res.send("✅ Real-Time Backend is Running");
 });
