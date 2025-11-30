@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { defaultStocks } from "./nseList";
-import { nseSymbols } from "./nseSymbols"; // your 500 list for autocomplete
+import { nseSymbols } from "./nseSymbols"; 
 
 const socket = io("wss://realtimebitstock-tracker.onrender.com", {
   transports: ["websocket"],
@@ -21,9 +21,9 @@ function formatINR(value) {
 export default function App() {
   const [bitcoin, setBitcoin] = useState(null);
   const [nifty, setNifty] = useState(null);
-  const [stocks, setStocks] = useState([]); // array of {symbol, price}
+  const [stocks, setStocks] = useState([]); 
 
-  // search/autocomplete (same as before)
+  
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
 
@@ -44,7 +44,7 @@ export default function App() {
     };
   }, []);
 
-  // autocomplete from your big symbol list
+  
   const onInput = (v) => {
     const s = v.toUpperCase();
     setQuery(s);
@@ -56,11 +56,11 @@ export default function App() {
     setSuggestions(filtered.slice(0, 8));
   };
 
-  // add symbol to the visible queue (frontend only) — optional
+  
   const addSymbolToQueue = (sym) => {
-    // prevent duplicates
+    
     if (stocks.find((s) => s.symbol === sym)) return;
-    // show a placeholder immediately; backend will update next tick if it is in server list
+    
     setStocks((prev) => [{ symbol: sym, price: null }, ...prev].slice(0, 50));
     setQuery("");
     setSuggestions([]);
